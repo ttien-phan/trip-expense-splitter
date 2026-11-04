@@ -43,4 +43,16 @@ class Trip:
         self.trip_expenses.remove(expense)
 
     def remove_user(self, user: User):
+
+        if user not in self.trip_users:
+            raise ValueError("User is not a member of this trip")
+        
+        if any(
+            user in expense.expense_users 
+            or expense.paid_by == user
+            or any(user in item.shared_by for item in expense.items)
+            for expense in self.trip_expenses
+        ):
+            raise ValueError("Cannot remove a user who participated in expenses")
+
         self.trip_users.remove(user)
