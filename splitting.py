@@ -6,7 +6,7 @@ def split_equally(expense: Expense):
     if not expense.expense_users:
         raise ValueError("Expense users list is empty")
 
-    one_share = expense.total_price / len(expense.expense_users)
+    one_share = round(expense.total_price / len(expense.expense_users), 2)
 
     shares = {}
     for user in expense.expense_users:
@@ -24,7 +24,7 @@ def split_by_item(expense: Expense):
         if not item.shared_by:
             raise ValueError(f"No users assigned to item: {item.name}")
 
-        one_share = item.price / len(item.shared_by)
+        one_share = round(item.price / len(item.shared_by), 2)
 
         for user in item.shared_by:
             if user not in shares:
