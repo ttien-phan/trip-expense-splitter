@@ -1,16 +1,12 @@
 from models import Expense
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 
 def split_equally(expense: Expense):
     if not expense.expense_users:
         raise ValueError("Expense users list is empty")
 
-    one_share = round(expense.total_price / len(expense.expense_users), 2)
-
-    shares = {}
-    for user in expense.expense_users:
-        shares[user] = one_share
+    shares = split_amount(expense.total_price, expense.expense_users, expense.paid_by)
     return shares
 
 
@@ -24,12 +20,29 @@ def split_by_item(expense: Expense):
         if not item.shared_by:
             raise ValueError(f"No users assigned to item: {item.name}")
 
-        one_share = round(item.price / len(item.shared_by), 2)
+        item_shares = split_amount(item.price, item.shared_by, expense.paid_by)
 
-        for user in item.shared_by:
+        for user, amount in item_shares.items():
             if user not in shares:
-                shares[user] = Decimal("0")
-            shares[user] = shares[user] + one_share
+                shares[user] = Decimal("0.00")
+            shares[user] += amount
+
+    return shares
+
+
+def split_amount(total_price, users, payer):
+    shares = {}
+
+    one_share = (total_price / len(users)).quantize(
+        Decimal("0.01"), rounding=ROUND_DOWN
+    )
+    remainder = total_price - (one_share * len(users))
+
+    for user in users:
+        if user == payer:
+            shares[user] = one_share + remainder
+        else:
+            shares[user] = one_share
 
     return shares
 
