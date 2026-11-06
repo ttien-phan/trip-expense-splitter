@@ -37,9 +37,10 @@ def split_amount(total_price, users, payer):
         Decimal("0.01"), rounding=ROUND_DOWN
     )
     remainder = total_price - (one_share * len(users))
+    remainder_receiver = payer if payer in users else users[0]
 
     for user in users:
-        if user == payer:
+        if user == remainder_receiver:
             shares[user] = one_share + remainder
         else:
             shares[user] = one_share
