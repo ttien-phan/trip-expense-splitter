@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 
-@dataclass
+@dataclass(frozen=True)
 class User:
     name: str
     id: UUID = field(default_factory=uuid4)
@@ -22,6 +22,7 @@ class Expense:
     name: str
     total_price: Decimal
     paid_by: User
+    id: UUID = field(default_factory=uuid4)
     expense_users: list[User] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
     expense_date: datetime = field(default_factory=datetime.now)
@@ -30,6 +31,7 @@ class Expense:
 @dataclass
 class Trip:
     name: str
+    id: UUID = field(default_factory=uuid4)
     trip_users: list[User] = field(default_factory=list)
     trip_expenses: list[Expense] = field(default_factory=list)
 
