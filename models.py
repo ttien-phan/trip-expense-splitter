@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID, uuid4
+from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,11 @@ class Item:
     shared_by: list[User] = field(default_factory=list)
 
 
+class SplitType(Enum):
+    EQUAL = "equal"
+    BY_ITEM = "by_item"
+
+
 @dataclass
 class Expense:
     name: str
@@ -26,6 +32,7 @@ class Expense:
     expense_users: list[User] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
     expense_date: datetime = field(default_factory=datetime.now)
+    split_type: SplitType.EQUAL
 
 
 @dataclass
