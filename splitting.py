@@ -31,6 +31,9 @@ def split_by_item(expense: Expense):
 
 
 def split_amount(total_price, users, payer):
+    if not users:
+        raise ValueError("Users list cannot be empty")
+
     shares = {}
 
     one_share = (total_price / len(users)).quantize(
