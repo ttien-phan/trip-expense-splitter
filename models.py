@@ -28,11 +28,12 @@ class Expense:
     name: str
     total_price: Decimal
     paid_by: User
+    split_type: SplitType = SplitType.EQUAL
     id: UUID = field(default_factory=uuid4)
     expense_users: list[User] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
     expense_date: datetime = field(default_factory=datetime.now)
-    split_type: SplitType.EQUAL
+    
 
 
 @dataclass
