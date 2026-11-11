@@ -1,20 +1,20 @@
 from dataclasses import dataclass, field
 from decimal import Decimal
 from datetime import datetime
-from uuid import UUID, uuid4
 from enum import Enum
 
 
 @dataclass(frozen=True)
 class User:
     name: str
-    id: UUID = field(default_factory=uuid4)
+    id: int | None = None
 
 
 @dataclass
 class Item:
     name: str
     price: Decimal
+    id: int | None = None
     shared_by: list[User] = field(default_factory=list)
 
 
@@ -28,18 +28,17 @@ class Expense:
     name: str
     total_price: Decimal
     paid_by: User
+    id: int | None = None
     split_type: SplitType = SplitType.EQUAL
-    id: UUID = field(default_factory=uuid4)
     expense_users: list[User] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
     expense_date: datetime = field(default_factory=datetime.now)
-    
 
 
 @dataclass
 class Trip:
     name: str
-    id: UUID = field(default_factory=uuid4)
+    id: int | None = None
     trip_users: list[User] = field(default_factory=list)
     trip_expenses: list[Expense] = field(default_factory=list)
 
