@@ -2,14 +2,14 @@ import sqlite3
 from contextlib import closing
 
 
-def get_connection():
-    connection = sqlite3.connect("expense_splitter.db")
+def get_connection(db_path="expense_splitter.db"):
+    connection = sqlite3.connect(db_path)
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
 
 
-def create_tables():
-    with closing(get_connection()) as connection:
+def create_tables(db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
 
