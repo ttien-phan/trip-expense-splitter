@@ -7,7 +7,7 @@ from enum import Enum
 @dataclass(frozen=True)
 class User:
     name: str
-    id: int | None = None
+    id: int 
 
 
 @dataclass
