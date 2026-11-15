@@ -6,9 +6,9 @@ from decimal import Decimal
 from datetime import datetime
 
 
-def add_user(name: str) -> User:
+def add_user(name: str, db_path="expense_splitter.db") -> User:
 
-    with closing(get_connection()) as connection:
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -22,8 +22,8 @@ def add_user(name: str) -> User:
     return User(name, user_id)
 
 
-def get_user(user_id):
-    with closing(get_connection()) as connection:
+def get_user(user_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -41,8 +41,8 @@ def get_user(user_id):
     return None
 
 
-def get_all_users():
-    with closing(get_connection()) as connection:
+def get_all_users(db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute("""
@@ -57,9 +57,9 @@ def get_all_users():
     return users
 
 
-def add_trip(trip: Trip):
+def add_trip(trip: Trip, db_path="expense_splitter.db"):
 
-    with closing(get_connection()) as connection:
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -73,8 +73,8 @@ def add_trip(trip: Trip):
     return Trip(trip.name, trip_id)
 
 
-def get_trip(trip_id):
-    with closing(get_connection()) as connection:
+def get_trip(trip_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -92,8 +92,8 @@ def get_trip(trip_id):
     return None
 
 
-def get_all_trips():
-    with closing(get_connection()) as connection:
+def get_all_trips(db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute("""
@@ -108,8 +108,8 @@ def get_all_trips():
     return trips
 
 
-def add_expense(expense: Expense, trip: Trip):
-    with closing(get_connection()) as connection:
+def add_expense(expense: Expense, trip: Trip, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -144,9 +144,8 @@ def add_expense(expense: Expense, trip: Trip):
                 saved_items.append(saved_item)
 
             expense.items = saved_items
-                
-            return replace(expense, id=expense_id)
 
+            return replace(expense, id=expense_id)
 
 
 def add_expense_user(cursor, expense_id, user_id):
@@ -154,7 +153,8 @@ def add_expense_user(cursor, expense_id, user_id):
         """
         INSERT INTO expense_users (expense_id, user_id)
         VALUES (?, ?);
-        """, (expense_id, user_id),
+        """,
+        (expense_id, user_id),
     )
 
 
@@ -163,11 +163,12 @@ def add_expense_item(cursor, expense_id, item):
         """
         INSERT INTO items(expense_id, name, price)
             VALUES (?,?,?);
-        """, (expense_id, item.name, str(item.price))
+        """,
+        (expense_id, item.name, str(item.price)),
     )
 
     item_id = cursor.lastrowid
-        
+
     for user in item.shared_by:
         cursor.execute(
             """
@@ -177,12 +178,10 @@ def add_expense_item(cursor, expense_id, item):
             (item_id, user.id),
         )
     return replace(item, id=item_id)
-    
 
 
-
-def get_expenses(trip_id):
-    with closing(get_connection()) as connection:
+def get_expenses(trip_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
@@ -195,75 +194,112 @@ def get_expenses(trip_id):
             result = cursor.fetchall()
     expenses = []
     for i in result:
-        expenses.append(Expense(i[2], 
-                        Decimal(i[3]), 
-                        get_user(i[4]), 
-                        i[0], 
-                        split_type=SplitType(i[5]), 
-                        expense_date=datetime.fromisoformat(i[6]),
-                        expense_users=get_expense_users(i[0]),
-                        items=get_expense_items(i[0])
-                        )
-                    )
+        expenses.append(
+            Expense(
+                i[2],
+                Decimal(i[3]),
+                get_user(i[4], db_path),
+                i[0],
+                split_type=SplitType(i[5]),
+                expense_date=datetime.fromisoformat(i[6]),
+                expense_users=get_expense_users(i[0], db_path),
+                items=get_expense_items(i[0], db_path),
+            )
+        )
     return expenses
 
 
-def get_expense_users(expense_id):
-    with closing(get_connection()) as connection:
+def get_expense_users(expense_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT user_id FROM expense_users
                 WHERE expense_id = ?
-            """, (expense_id,))
+            """,
+                (expense_id,),
+            )
 
             result = cursor.fetchall()
 
         users = []
         for user_id in result:
-            users.append(get_user(user_id[0]))
+            users.append(get_user(user_id[0], db_path))
 
     return users
 
 
-
-def get_item_users(item_id):
-    with closing(get_connection()) as connection:
+def get_item_users(item_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT user_id FROM item_users
                 WHERE item_id = ?
-            """, (item_id,))
+            """,
+                (item_id,),
+            )
 
             result = cursor.fetchall()
 
         users = []
         for user_id in result:
-            users.append(get_user(user_id[0]))
+            users.append(get_user(user_id[0], db_path))
 
     return users
 
 
-def get_expense_items(expense_id):
-    with closing(get_connection()) as connection:
+def get_expense_items(expense_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
         with connection:
             cursor = connection.cursor()
             cursor.execute(
                 """
                 SELECT * FROM items
                 WHERE expense_id = ?
-                """, (expense_id,)
+                """,
+                (expense_id,),
             )
 
             result = cursor.fetchall()
 
     items = []
     for row in result:
-        users = get_item_users(row[0])
-        items.append(Item(name=row[2], 
-                        price=Decimal(row[3]),
-                        id=row[0],
-                        shared_by=users
-                        ))
+        users = get_item_users(row[0], db_path)
+        items.append(
+            Item(name=row[2], price=Decimal(row[3]), id=row[0], shared_by=users)
+        )
     return items
+
+
+def add_trip_user(cursor, trip_id, user_id):
+    cursor.execute(
+        """
+        INSERT INTO trip_users (trip_id, user_id)
+        VALUES (?, ?);
+        """,
+        (trip_id, user_id),
+    )
+
+
+def get_trip_users(trip_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
+        with connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT user_id FROM trip_users
+                WHERE trip_id = ?
+            """,
+                (trip_id,),
+            )
+
+            result = cursor.fetchall()
+
+        users = []
+        for user_id in result:
+            users.append(get_user(user_id[0], db_path))
+
+    return users
