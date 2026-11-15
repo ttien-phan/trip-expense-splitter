@@ -15,10 +15,10 @@ import pytest
 @pytest.fixture
 def users():
     return {
-        "Alex": User(name="Alex"),
-        "Maria": User(name="Maria"),
-        "Jack": User(name="Jack"),
-        "Lora": User(name="Lora")
+        "Alex": User(name="Alex", id=1),
+        "Maria": User(name="Maria", id=2),
+        "Jack": User(name="Jack", id=3),
+        "Lora": User(name="Lora", id=4),
     }
 
 

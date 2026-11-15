@@ -5,8 +5,8 @@ from decimal import Decimal
 
 @pytest.fixture
 def users():
-    return {"Alex": User(name="Alex"), 
-            "Maria": User(name="Maria")}
+    return {"Alex": User(name="Alex", id=1), 
+            "Maria": User(name="Maria", id=2)}
 
 
 def test_add_user(users):
