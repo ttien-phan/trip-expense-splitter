@@ -87,3 +87,18 @@ def create_tables(db_path="expense_splitter.db"):
                 FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """)
+
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS repayments(
+                id INTEGER PRIMARY KEY,
+                trip_id INTEGER NOT NULL,
+                paid_by INTEGER NOT NULL,
+                paid_to INTEGER NOT NULL,
+                amount TEXT NOT NULL,
+                repayment_date TEXT NOT NULL,
+
+                FOREIGN KEY (trip_id) REFERENCES trips(id),
+                FOREIGN KEY (paid_by) REFERENCES users(id),
+                FOREIGN KEY (paid_to) REFERENCES users(id)
+                ) 
+            """)
