@@ -1,4 +1,4 @@
-from models import User, Trip, Expense, SplitType, Item
+from models import Repayment, User, Trip, Expense, SplitType, Item
 from database import get_connection
 from contextlib import closing
 from dataclasses import replace
@@ -303,3 +303,53 @@ def get_trip_users(trip_id, db_path="expense_splitter.db"):
             users.append(get_user(user_id[0], db_path))
 
     return users
+
+
+def add_repayment(repayment: Repayment, trip: Trip, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
+        with connection:
+            cursor = connection.cursor()
+            cursor.execute(
+            """
+            INSERT INTO repayments(
+                trip_id,
+                paid_by,
+                paid_to,
+                amount,
+                repayment_date
+            )
+            VALUES(?,?,?,?,?)
+            """, 
+                (trip.id, repayment.paid_by.id, repayment.paid_to.id, str(repayment.amount), repayment.repayment_date.isoformat())
+            )
+
+            repayment_id = cursor.lastrowid
+
+    return replace(repayment, id=repayment_id)
+
+
+def get_repayments(trip_id, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
+        with connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT * FROM repayments
+                WHERE trip_id = ?
+                """, (trip_id,)
+            )
+            result = cursor.fetchall()
+
+    repayments = []
+    for i in result:
+        repayments.append(
+            Repayment(
+                paid_by=get_user(i[2], db_path),
+                paid_to=get_user(i[3], db_path),
+                amount=Decimal(i[4]),
+                id=i[0],
+                repayment_date=datetime.fromisoformat(i[5])
+            )
+        )
+
+    return repayments

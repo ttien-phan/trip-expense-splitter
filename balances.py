@@ -24,6 +24,12 @@ def calculate_balances(trip):
 
             balances[pair] += value
 
+    for repayment in trip.trip_repayments:
+        pair = (repayment.paid_by, repayment.paid_to)
+
+        if pair in balances:
+            balances[pair] -= repayment.amount
+
     return balances
 
 
@@ -74,3 +80,5 @@ def get_user_all_owed(balances, user):
             owed_by_users[key[0]] = value
 
     return owed_by_users
+
+
