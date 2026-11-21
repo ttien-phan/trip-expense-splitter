@@ -1,5 +1,5 @@
 from decimal import Decimal
-from models import User, Trip, SplitType, Expense, Item
+from models import User, Trip, SplitType, Expense, Item, Repayment
 from balances import (
     calculate_balances,
     get_debt,
@@ -202,6 +202,64 @@ def test_get_user_all_owed(users, balances):
     expected = {
         users["Jack"]: Decimal("25.00"),
         users["Alex"]: Decimal("25.00"),
+    }
+
+    assert result == expected
+
+
+def test_calculate_balances_with_partial_repayment(users):
+    expense = create_expense(
+        "Dinner",
+        users["Alex"],
+        [users["Alex"], users["Jack"]],
+        Decimal("40.00")
+    )
+
+    repayment = Repayment(
+        paid_by=users["Jack"],
+        paid_to=users["Alex"],
+        amount=Decimal("10.00")
+    )
+
+    trip = Trip(
+        name="Portugal",
+        trip_expenses=[expense],
+        trip_repayments=[repayment]
+    )
+
+    result = calculate_balances(trip)
+
+    expected = {
+        (users["Jack"], users["Alex"]): Decimal("10.00")
+    }
+
+    assert result == expected
+
+
+def test_calculate_balances_with_full_repayment(users):
+    expense = create_expense(
+        "Dinner",
+        users["Alex"],
+        [users["Alex"], users["Jack"]],
+        Decimal("40.00")
+    )
+
+    repayment = Repayment(
+        paid_by=users["Jack"],
+        paid_to=users["Alex"],
+        amount=Decimal("20.00")
+    )
+
+    trip = Trip(
+        name="Portugal",
+        trip_expenses=[expense],
+        trip_repayments=[repayment]
+    )
+
+    result = calculate_balances(trip)
+
+    expected = {
+        (users["Jack"], users["Alex"]): Decimal("0.00")
     }
 
     assert result == expected
