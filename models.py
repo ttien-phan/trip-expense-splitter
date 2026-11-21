@@ -34,6 +34,16 @@ class Expense:
     items: list[Item] = field(default_factory=list)
     expense_date: datetime = field(default_factory=datetime.now)
 
+    def __post_init__(self):
+        if self.split_type == SplitType.BY_ITEM:
+            if not self.items:
+                raise ValueError("BY_ITEM expense must contain at least one item")
+            
+            items_total = sum(item.price for item in self.items)
+            if items_total != self.total_price:
+                raise ValueError(f"Items total {items_total} does not match expense total {self.total_price}")
+
+
 
 @dataclass
 class Trip:
