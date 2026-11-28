@@ -26,9 +26,7 @@ def calculate_balances(trip):
 
     for repayment in trip.trip_repayments:
         pair = (repayment.paid_by, repayment.paid_to)
-
-        if pair in balances:
-            balances[pair] -= repayment.amount
+        balances[pair] = balances.get(pair, Decimal("0.00")) - repayment.amount
 
     return balances
 
