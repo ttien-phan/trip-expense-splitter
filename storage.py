@@ -284,6 +284,13 @@ def add_trip_user(cursor, trip_id, user_id):
     )
 
 
+def add_user_to_trip(user: User, trip: Trip, db_path="expense_splitter.db"):
+    with closing(get_connection(db_path)) as connection:
+        with connection:
+            cursor = connection.cursor()
+            add_trip_user(cursor, trip.id, user.id)
+
+
 def get_trip_users(trip_id, db_path="expense_splitter.db"):
     with closing(get_connection(db_path)) as connection:
         with connection:
